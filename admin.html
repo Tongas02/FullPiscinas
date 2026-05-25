@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Admin FullPiscinas</title>
+
+<style>
+/* =========================
+   🌈 BASE GENERAL
+========================= */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: linear-gradient(135deg, #eef2f7, #dbe7ff);
+  text-align: center;
+  color: #333;
+}
+
+/* =========================
+   🔐 LOGIN
+========================= */
+#loginBox {
+  margin-top: 120px;
+  animation: fadeIn 0.6s ease;
+}
+
+input, select {
+  width: 280px;
+  padding: 12px;
+  margin: 8px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  outline: none;
+  transition: 0.3s;
+}
+
+input:focus {
+  border-color: #4a90e2;
+  box-shadow: 0 0 8px rgba(74,144,226,0.4);
+}
+
+/* =========================
+   🔘 BOTONES
+========================= */
+button {
+  padding: 12px 18px;
+  margin: 6px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  background: #4a90e2;
+  color: white;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  background: #2f6fd1;
+}
+
+.back {
+  background: #444;
+}
+
+.back:hover {
+  background: #222;
+}
+
+/* =========================
+   📦 MENÚ CATEGORÍAS
+========================= */
+#menu {
+  display: none;
+  margin-top: 80px;
+}
+
+.card {
+  display: inline-block;
+  width: 180px;
+  padding: 35px;
+  margin: 15px;
+  background: white;
+  border-radius: 15px;
+  cursor: pointer;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+  transition: 0.3s;
+  font-weight: bold;
+}
+
+.card:hover {
+  transform: scale(1.05);
+  background: #4a90e2;
+  color: white;
+}
+
+/* =========================
+   🧠 PANEL
+========================= */
+#panel {
+  display: none;
+  animation: fadeIn 0.4s ease;
+}
+
+/* =========================
+   🧾 PRODUCTOS
+========================= */
+.producto-admin {
+  width: 320px;
+  margin: 15px auto;
+  background: white;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+  animation: slideUp 0.3s ease;
+}
+
+.producto-admin img {
+  width: 100%;
+  height: 170px;
+  object-fit: cover;
+}
+
+.producto-admin h4 {
+  margin: 10px 0 5px;
+}
+
+.producto-admin p {
+  margin: 0;
+  color: #666;
+}
+
+/* =========================
+   ✨ ANIMACIONES
+========================= */
+@keyframes fadeIn {
+  from {opacity: 0; transform: translateY(10px);}
+  to {opacity: 1; transform: translateY(0);}
+}
+
+@keyframes slideUp {
+  from {opacity: 0; transform: translateY(20px);}
+  to {opacity: 1; transform: translateY(0);}
+}
+
+/* =========================
+   📱 RESPONSIVE
+========================= */
+@media (max-width: 600px) {
+  .card {
+    width: 80%;
+  }
+
+  input {
+    width: 80%;
+  }
+}
+</style>
+
+</head>
+
+<body>
+
+<!-- 🔐 LOGIN -->
+<div id="loginBox">
+
+  <h1>🔐 Admin FullPiscinas</h1>
+
+  <input type="text" id="user" placeholder="Usuario"><br>
+  <input type="password" id="pass" placeholder="Contraseña"><br>
+
+  <button onclick="login()">Entrar</button>
+
+  <p id="msg" style="color:red;"></p>
+
+</div>
+
+<!-- 📦 MENÚ -->
+<div id="menu">
+
+  <h2>Selecciona categoría</h2>
+
+  <div class="card" onclick="abrir('piscinas')">🏊 Piscinas</div>
+  <div class="card" onclick="abrir('hogar')">🏠 Hogar</div>
+  <div class="card" onclick="abrir('productos')">📦 Productos</div>
+
+</div>
+
+<!-- 🧠 PANEL -->
+<div id="panel">
+
+<button class="back" onclick="volver()">⬅ Volver</button>
+
+<h2 id="titulo"></h2>
+
+<input type="text" id="nombre" placeholder="Nombre"><br>
+<input type="text" id="precio" placeholder="Precio"><br>
+
+<input type="file" id="img"><br>
+
+<button onclick="guardar()">Guardar</button>
+
+<hr>
+
+<div id="lista"></div>
+
+</div>
+
+<script>
+
+let categoriaActual = "";
+let editIndex = -1;
+
+/* 🔐 LOGIN */
+function login(){
+
+  let u = document.getElementById("user").value;
+  let p = document.getElementById("pass").value;
+
+  if(u === "fulladminpiscina" && p === "19872020"){
+    document.getElementById("loginBox").style.display = "none";
+    document.getElementById("menu").style.display = "block";
+  } else {
+    document.getElementById("msg").innerText = "Usuario o contraseña incorrectos";
+  }
+}
+
+/* 📂 ABRIR CATEGORÍA */
+function abrir(cat){
+  categoriaActual = cat;
+
+  document.getElementById("menu").style.display = "none";
+  document.getElementById("panel").style.display = "block";
+
+  document.getElementById("titulo").innerText = "Categoría: " + cat;
+
+  mostrar();
+}
+
+/* 🔙 VOLVER */
+function volver(){
+  document.getElementById("panel").style.display = "none";
+  document.getElementById("menu").style.display = "block";
+}
+
+/* 💾 GUARDAR */
+function guardar(){
+
+  let nombre = document.getElementById("nombre").value;
+  let precio = document.getElementById("precio").value;
+  let file = document.getElementById("img").files[0];
+
+  let productos = JSON.parse(localStorage.getItem("productos") || "[]");
+
+  function save(imgData){
+
+    let data = {
+      nombre,
+      precio,
+      cat: categoriaActual,
+      img: imgData
+    };
+
+    if(editIndex === -1){
+      productos.push(data);
+    } else {
+      productos[editIndex] = data;
+      editIndex = -1;
+    }
+
+    localStorage.setItem("productos", JSON.stringify(productos));
+
+    limpiar();
+    mostrar();
+  }
+
+  if(file){
+    let reader = new FileReader();
+    reader.onload = () => save(reader.result);
+    reader.readAsDataURL(file);
+  } else {
+    if(editIndex !== -1){
+      save(productos[editIndex].img);
+    }
+  }
+}
+
+/* 📦 MOSTRAR */
+function mostrar(){
+
+  let productos = JSON.parse(localStorage.getItem("productos") || "[]");
+  let lista = document.getElementById("lista");
+
+  lista.innerHTML = "";
+
+  productos.forEach((p, index) => {
+
+    if(p.cat === categoriaActual){
+
+      lista.innerHTML += `
+        <div class="producto-admin">
+          <img src="${p.img}">
+          <h4>${p.nombre}</h4>
+          <p>${p.precio}</p>
+
+          <button onclick="editar(${index})">✏ Editar</button>
+          <button onclick="eliminar(${index})">🗑 Eliminar</button>
+        </div>
+      `;
+    }
+  });
+}
+
+/* 🗑 ELIMINAR */
+function eliminar(i){
+  let productos = JSON.parse(localStorage.getItem("productos") || "[]");
+  productos.splice(i, 1);
+  localStorage.setItem("productos", JSON.stringify(productos));
+  mostrar();
+}
+
+/* ✏ EDITAR */
+function editar(i){
+  let productos = JSON.parse(localStorage.getItem("productos") || "[]");
+  let p = productos[i];
+
+  document.getElementById("nombre").value = p.nombre;
+  document.getElementById("precio").value = p.precio;
+
+  editIndex = i;
+}
+
+/* 🧹 LIMPIAR */
+function limpiar(){
+  document.getElementById("nombre").value = "";
+  document.getElementById("precio").value = "";
+  document.getElementById("img").value = "";
+}
+
+</script>
+
+</body>
+</html>
